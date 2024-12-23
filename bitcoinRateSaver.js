@@ -15,7 +15,6 @@ class BitcoinRateSaver {
         this.fetchingUrl = fetchingUrl;
     }
 
-    // ------- AIRTABLE FUNCTIONS ---------
     /**
      * Responsible to send a single (rate, time) record to the airtable.
      *
