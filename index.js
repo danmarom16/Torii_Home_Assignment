@@ -1,12 +1,12 @@
 
-// Load dotenv to fetch secret API key
+// CONSTANTS
+const BTC_RATE_URL = "https://api.coinbase.com/v2/exchange-rates?currency=BTC"
+const FETCH_INTERVAL = 60000;
+
+// CONFIG
 const dotenv = require('dotenv');
 dotenv.config();
 
-// Init axios
-const axios = require("axios");
-
-// Init airtable
 const Airtable = require('airtable');
 Airtable.configure({
     endpointUrl: 'https://api.airtable.com',
@@ -14,40 +14,6 @@ Airtable.configure({
 });
 const base = Airtable.base(process.env.BASE_ID);
 
-
-async function fetchBitcoinRates() {
-    try{
-        const response = await axios.get("https://api.coinbase.com/v2/exchange-rates?currency=BTC");
-        return response.data.data.rates.USD;
-    } catch (e) {
-        console.log(e);
-    }
-}
-
-async function sendToAirtable(rates, time) {
-    try {
-        await base("BTC Table").create([
-            {
-                fields: {
-                    Time: time,
-                    Rates: parseFloat(rates),
-                }
-            }
-        ])
-        console.log("Successfully send to airtable");
-    } catch (e) {
-        console.log(e);
-    }
-}
-
-async function fetchAndSave() {
-    try {
-        const rate = await fetchBitcoinRates();
-        const time = new Date().toLocaleString('en-US');
-        await sendToAirtable(rate, time);
-    } catch (e) {
-        console.log(e);
-        throw e;
-    }
-}
-setInterval(fetchAndSave, 1000);
+const BitcoinRateSaver = require('./bitcoinRateSaver');
+const rateSaver = new BitcoinRateSaver(base, FETCH_INTERVAL, BTC_RATE_URL);
+rateSaver.start();
